@@ -2,9 +2,6 @@
 
 echo
 echo "==> Running go test <=="
-if [ $(uname) == "Linux" ]; then
-  go test -msan ./... || exit_code=1
-fi
 go test -cover -race -coverprofile=cover.out -outputdir=coverage ./... || exit_code=1
 echo
 echo "==> Running coverage <=="

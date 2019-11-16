@@ -173,13 +173,6 @@ func BenchmarkOperation_Exec(b *testing.B) {
 			b.Fatalf("Unexpected error %v", err)
 		}
 
-		image, ok = resizeOut.Image()
-		if !ok {
-			op.Free()
-			resizeOp.Free()
-			b.Fatalf("Expected *C.VipsImage in out")
-		}
-
 		saveOp, err := imgvips.NewOperation("pngsave")
 		if err != nil {
 			op.Free()
@@ -247,12 +240,6 @@ func ExampleOperation_Exec() {
 
 	if err := resizeOp.Exec(); err != nil {
 		log.Println(err)
-		return
-	}
-
-	image, ok = resizeOut.Image()
-	if !ok {
-		log.Println(errors.New("resizeOut is not *C.VipsImage"))
 		return
 	}
 
