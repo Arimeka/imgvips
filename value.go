@@ -12,20 +12,7 @@ import (
 	"unsafe"
 )
 
-// NewRawGValue creates GValue from raw glib value
-// It can be used to create GValue from something not implemented by the functions below.
-// free func called in GValue.Free().
-// copy func called in GValue.Copy().
-func NewRawGValue(gValue *C.GValue, gType C.GType, freeFn func(*GValue), copyFn func(*GValue) (*GValue, error)) *GValue {
-	return &GValue{
-		gType:  gType,
-		gValue: gValue,
-		free:   freeFn,
-		copy:   copyFn,
-	}
-}
-
-// GValue contains glib value and its type
+// GValue contains glib gValue and its type
 type GValue struct {
 	gType  C.GType
 	gValue *C.GValue
@@ -35,23 +22,15 @@ type GValue struct {
 	mu   sync.RWMutex
 }
 
-// GType return value C.GType
-func (v *GValue) GType() C.GType {
-	v.mu.RLock()
-	defer v.mu.RUnlock()
-
-	return v.gType
-}
-
-// GValue return value *C.GValue
-func (v *GValue) GValue() *C.GValue {
+// gValue return gValue *C.gValue
+func (v *GValue) value() *C.GValue {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
 	return v.gValue
 }
 
-// Copy create new instance of *GValue with new *C.GValue and run copy() func
+// Copy create new instance of *GValue with new *C.gValue and run copy() func
 func (v *GValue) Copy() (*GValue, error) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -59,7 +38,7 @@ func (v *GValue) Copy() (*GValue, error) {
 	return v.copy(v)
 }
 
-// Free call free func for unref value
+// Free call free func for unref gValue
 func (v *GValue) Free() {
 	v.mu.Lock()
 	defer v.mu.Unlock()
@@ -67,9 +46,9 @@ func (v *GValue) Free() {
 	v.free(v)
 }
 
-// Boolean return boolean value, if type is GBoolean.
+// Boolean return boolean gValue, if type is GBoolean.
 // If type not match, ok will return false.
-// If value already freed, value will be false, ok will be true.
+// If gValue already freed, gValue will be false, ok will be true.
 func (v *GValue) Boolean() (value, ok bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -89,9 +68,9 @@ func (v *GValue) Boolean() (value, ok bool) {
 	return true, true
 }
 
-// Int return int value, if type is GInt.
+// Int return int gValue, if type is GInt.
 // If type not match, ok will return false.
-// If value already freed, value will be 0, ok will be true.
+// If gValue already freed, gValue will be 0, ok will be true.
 func (v *GValue) Int() (value int, ok bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -106,9 +85,9 @@ func (v *GValue) Int() (value int, ok bool) {
 	return int(C.g_value_get_int(v.gValue)), true
 }
 
-// Double return float64 value, if type is GDouble.
+// Double return float64 gValue, if type is GDouble.
 // If type not match, ok will return false.
-// If value already freed, value will be 0, ok will be true.
+// If gValue already freed, gValue will be 0, ok will be true.
 func (v *GValue) Double() (value float64, ok bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -123,9 +102,9 @@ func (v *GValue) Double() (value float64, ok bool) {
 	return float64(C.g_value_get_double(v.gValue)), true
 }
 
-// Double return string value, if type is GString.
+// Double return string gValue, if type is GString.
 // If type not match, ok will return false.
-// If value already freed, value will be empty string, ok will be true.
+// If gValue already freed, gValue will be empty string, ok will be true.
 func (v *GValue) String() (value string, ok bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
@@ -140,10 +119,10 @@ func (v *GValue) String() (value string, ok bool) {
 	return C.GoString((*C.char)(unsafe.Pointer(C.g_value_get_string(v.gValue)))), true
 }
 
-// Image return *C.VipsImage value, if type is *C.VipsImage.
+// Image return *Image, if type is *C.VipsImage.
 // If type not match, ok will return false.
-// If value already freed, value will be nil, ok will be true.
-func (v *GValue) Image() (value *C.VipsImage, ok bool) {
+// If gValue already freed, gValue will be nil, ok will be true.
+func (v *GValue) Image() (value *Image, ok bool) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
@@ -153,11 +132,18 @@ func (v *GValue) Image() (value *C.VipsImage, ok bool) {
 	if v.gValue == nil {
 		return nil, true
 	}
+	ptr := C.g_value_peek_pointer(v.gValue)
+	if ptr == nil {
+		return nil, true
+	}
 
-	return (*C.VipsImage)(C.g_value_get_object(v.gValue)), true
+	return &Image{
+		image: (*C.VipsImage)(C.g_value_get_object(v.gValue)),
+		val:   v,
+	}, true
 }
 
-// GBoolean transform bool value to glib value
+// GBoolean transform bool gValue to glib gValue
 func GBoolean(value bool) *GValue {
 	var (
 		cBool  C.gboolean
@@ -190,7 +176,12 @@ func GBoolean(value bool) *GValue {
 		C.g_value_init(&gVal, val.gType)
 		C.g_value_copy(val.gValue, &gVal)
 
-		return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+		return &GValue{
+			gType:  val.gType,
+			gValue: &gVal,
+			free:   val.free,
+			copy:   val.copy,
+		}, nil
 	}
 
 	C.g_value_init(v.gValue, v.gType)
@@ -199,7 +190,7 @@ func GBoolean(value bool) *GValue {
 	return v
 }
 
-// GInt transform int value to glib value
+// GInt transform int gValue to glib gValue
 func GInt(value int) *GValue {
 	var gValue C.GValue
 
@@ -223,7 +214,12 @@ func GInt(value int) *GValue {
 		C.g_value_init(&gVal, val.gType)
 		C.g_value_copy(val.gValue, &gVal)
 
-		return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+		return &GValue{
+			gType:  val.gType,
+			gValue: &gVal,
+			free:   val.free,
+			copy:   val.copy,
+		}, nil
 	}
 
 	C.g_value_init(v.gValue, v.gType)
@@ -232,7 +228,7 @@ func GInt(value int) *GValue {
 	return v
 }
 
-// GDouble transform float64 value to glib value
+// GDouble transform float64 gValue to glib gValue
 func GDouble(value float64) *GValue {
 	var gValue C.GValue
 
@@ -256,7 +252,12 @@ func GDouble(value float64) *GValue {
 		C.g_value_init(&gVal, val.gType)
 		C.g_value_copy(val.gValue, &gVal)
 
-		return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+		return &GValue{
+			gType:  val.gType,
+			gValue: &gVal,
+			free:   val.free,
+			copy:   val.copy,
+		}, nil
 	}
 
 	C.g_value_init(v.gValue, v.gType)
@@ -265,7 +266,7 @@ func GDouble(value float64) *GValue {
 	return v
 }
 
-// GString transform string value to glib value
+// GString transform string gValue to glib gValue
 func GString(value string) *GValue {
 	var gValue C.GValue
 
@@ -295,20 +296,25 @@ func GString(value string) *GValue {
 		defer C.free(unsafe.Pointer(cStr))
 
 		C.g_value_init(&gVal, val.gType)
-		C.g_value_set_string(&gVal, (*C.gchar)(cStr))
+		C.g_value_set_string(&gVal, cStr)
 
-		return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+		return &GValue{
+			gType:  val.gType,
+			gValue: &gVal,
+			free:   val.free,
+			copy:   val.copy,
+		}, nil
 	}
 
 	C.g_value_init(v.gValue, v.gType)
-	C.g_value_set_string(v.gValue, (*C.gchar)(cStr))
+	C.g_value_set_string(v.gValue, cStr)
 
 	return v
 }
 
-// GVipsImage return GValue, contains new empty VipsImage
+// GVipsImage return gValue, contains new empty VipsImage
 func GVipsImage() *GValue {
-	value := NewVipsImage()
+	value := C.vips_image_new()
 	v := GNullVipsImage()
 
 	C.g_value_set_object(v.gValue, C.gpointer(value))
@@ -316,7 +322,7 @@ func GVipsImage() *GValue {
 	return v
 }
 
-// GNullVipsImage create empty glib object value with type for *C.VipsImage
+// GNullVipsImage create empty glib object gValue with type for *C.VipsImage
 func GNullVipsImage() *GValue {
 	var gValue C.GValue
 
@@ -348,7 +354,12 @@ func GNullVipsImage() *GValue {
 
 		ptr := C.g_value_peek_pointer(val.gValue)
 		if ptr == nil {
-			return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+			return &GValue{
+				gType:  val.gType,
+				gValue: &gVal,
+				free:   val.free,
+				copy:   val.copy,
+			}, nil
 		}
 
 		op, err := NewOperation("copy")
@@ -372,7 +383,7 @@ func GNullVipsImage() *GValue {
 		if success != 0 {
 			original := (*C.VipsImage)(C.g_value_get_object(v.gValue))
 			ptr := C.g_value_peek_pointer(&gVal)
-			if ImageHeight(original) != 1 || ImageWidth(original) != 1 || ptr == nil {
+			if int(C.vips_image_get_width(original)) != 1 || int(C.vips_image_get_height(original)) != 1 || ptr == nil {
 				if ptr != nil {
 					C.g_object_unref(ptr)
 				}
@@ -383,7 +394,12 @@ func GNullVipsImage() *GValue {
 
 		}
 
-		return NewRawGValue(&gVal, val.gType, val.free, val.copy), nil
+		return &GValue{
+			gType:  val.gType,
+			gValue: &gVal,
+			free:   val.free,
+			copy:   val.copy,
+		}, nil
 	}
 
 	C.g_value_init(v.gValue, C.vips_image_get_type())

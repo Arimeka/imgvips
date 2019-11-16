@@ -6,17 +6,29 @@ package imgvips
 */
 import "C"
 
-// NewVipsImage create empty *C.VipsImage
-func NewVipsImage() *C.VipsImage {
-	return C.vips_image_new()
+// Image wrapper around *C.VipsImage
+type Image struct {
+	image *C.VipsImage
+
+	val *GValue
 }
 
-// ImageWidth get width from *C.VipsImage
-func ImageWidth(img *C.VipsImage) int {
-	return int(C.vips_image_get_width(img))
+// Width return image width
+// Return 0 if image was freed
+func (i *Image) Width() int {
+	if i.val.gValue == nil {
+		return 0
+	}
+
+	return int(C.vips_image_get_width(i.image))
 }
 
-// ImageHeight get height from *C.VipsImage
-func ImageHeight(img *C.VipsImage) int {
-	return int(C.vips_image_get_height(img))
+// Height return image height
+// Return 0 if image was freed
+func (i *Image) Height() int {
+	if i.val.gValue == nil {
+		return 0
+	}
+
+	return int(C.vips_image_get_height(i.image))
 }

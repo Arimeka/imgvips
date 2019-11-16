@@ -152,7 +152,7 @@ func TestGVipsImage(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result == nil {
-		t.Fatalf("Expected return %p, got nil", result)
+		t.Fatal("Expected return image, got nil")
 	}
 
 	// Check multiply free
@@ -213,7 +213,7 @@ func TestGValue_CopyBoolean(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 {
-		t.Error("Expected val1 contain false value")
+		t.Error("Expected val1 contain false gValue")
 	}
 
 	result2, ok := val2.Boolean()
@@ -221,7 +221,7 @@ func TestGValue_CopyBoolean(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if !result2 {
-		t.Error("Expected val2 contain true value")
+		t.Error("Expected val2 contain true gValue")
 	}
 
 	val2.Free()
@@ -230,7 +230,7 @@ func TestGValue_CopyBoolean(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 {
-		t.Error("Expected val2 contain false value")
+		t.Error("Expected val2 contain false gValue")
 	}
 }
 
@@ -240,14 +240,14 @@ func compareBooleanValsFull(t *testing.T, val1, val2 *imgvips.GValue) {
 		t.Fatal("Expected to be ok")
 	}
 	if !result1 {
-		t.Error("Expected val1 contain true value")
+		t.Error("Expected val1 contain true gValue")
 	}
 	result2, ok := val2.Boolean()
 	if !ok {
 		t.Fatal("Expected to be ok")
 	}
 	if !result2 {
-		t.Error("Expected val2 contain true value")
+		t.Error("Expected val2 contain true gValue")
 	}
 }
 
@@ -269,7 +269,7 @@ func TestGValue_CopyInt(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != 0 {
-		t.Errorf("Expected val1 contain %d value, got %d", 0, result1)
+		t.Errorf("Expected val1 contain %d gValue, got %d", 0, result1)
 	}
 
 	result2, ok := val2.Int()
@@ -277,7 +277,7 @@ func TestGValue_CopyInt(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %d value, got %d", v, result2)
+		t.Errorf("Expected val2 contain %d gValue, got %d", v, result2)
 	}
 
 	val2.Free()
@@ -286,7 +286,7 @@ func TestGValue_CopyInt(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != 0 {
-		t.Errorf("Expected val2 contain %d value, got %d", 0, result2)
+		t.Errorf("Expected val2 contain %d gValue, got %d", 0, result2)
 	}
 }
 
@@ -296,14 +296,14 @@ func compareIntValsFull(t *testing.T, v int, val1, val2 *imgvips.GValue) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != v {
-		t.Errorf("Expected val1 contain %d value, got %d", v, result1)
+		t.Errorf("Expected val1 contain %d gValue, got %d", v, result1)
 	}
 	result2, ok := val2.Int()
 	if !ok {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %d value, got %d", v, result2)
+		t.Errorf("Expected val2 contain %d gValue, got %d", v, result2)
 	}
 }
 
@@ -325,7 +325,7 @@ func TestGValue_CopyDouble(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != 0 {
-		t.Errorf("Expected val1 contain %f value, got %f", 0.0, result1)
+		t.Errorf("Expected val1 contain %f gValue, got %f", 0.0, result1)
 	}
 
 	result2, ok := val2.Double()
@@ -333,7 +333,7 @@ func TestGValue_CopyDouble(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %f value, got %f", v, result2)
+		t.Errorf("Expected val2 contain %f gValue, got %f", v, result2)
 	}
 
 	val2.Free()
@@ -342,7 +342,7 @@ func TestGValue_CopyDouble(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != 0 {
-		t.Errorf("Expected val2 contain %f value, got %f", 0.0, result2)
+		t.Errorf("Expected val2 contain %f gValue, got %f", 0.0, result2)
 	}
 }
 
@@ -352,14 +352,14 @@ func compareDoubleValsFull(t *testing.T, v float64, val1, val2 *imgvips.GValue) 
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != v {
-		t.Errorf("Expected val1 contain %f value, got %f", v, result1)
+		t.Errorf("Expected val1 contain %f gValue, got %f", v, result1)
 	}
 	result2, ok := val2.Double()
 	if !ok {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %f value, got %f", v, result2)
+		t.Errorf("Expected val2 contain %f gValue, got %f", v, result2)
 	}
 }
 
@@ -381,7 +381,7 @@ func TestGValue_CopyString(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != "" {
-		t.Errorf("Expected val1 contain empty string value, got %s", result1)
+		t.Errorf("Expected val1 contain empty string gValue, got %s", result1)
 	}
 
 	result2, ok := val2.String()
@@ -389,7 +389,7 @@ func TestGValue_CopyString(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %s value, got %s", v, result2)
+		t.Errorf("Expected val2 contain %s gValue, got %s", v, result2)
 	}
 
 	val2.Free()
@@ -398,7 +398,7 @@ func TestGValue_CopyString(t *testing.T) {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != "" {
-		t.Errorf("Expected val2 contain empty string value, got %s", result2)
+		t.Errorf("Expected val2 contain empty string gValue, got %s", result2)
 	}
 }
 
@@ -408,14 +408,14 @@ func compareStringValsFull(t *testing.T, v string, val1, val2 *imgvips.GValue) {
 		t.Fatal("Expected to be ok")
 	}
 	if result1 != v {
-		t.Errorf("Expected val1 contain %s value, got %s", v, result1)
+		t.Errorf("Expected val1 contain %s gValue, got %s", v, result1)
 	}
 	result2, ok := val2.String()
 	if !ok {
 		t.Fatal("Expected to be ok")
 	}
 	if result2 != v {
-		t.Errorf("Expected val2 contain %s value, got %s", v, result2)
+		t.Errorf("Expected val2 contain %s gValue, got %s", v, result2)
 	}
 }
 
@@ -580,13 +580,5 @@ func compareNewImageVals(t *testing.T, val1, val2 *imgvips.GValue) {
 	}
 	if result2 == result1 {
 		t.Errorf("Expected val2 contain %p different from val1 %p", result2, result1)
-	}
-}
-
-func TestGValue_GType(t *testing.T) {
-	val1 := imgvips.GBoolean(true)
-	val2 := imgvips.GBoolean(false)
-	if val1.GType() != val2.GType() {
-		t.Fatalf("Expected val1.GType() %v equal val2.GType() %v", val1.GType(), val2.GType())
 	}
 }

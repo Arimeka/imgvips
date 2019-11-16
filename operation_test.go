@@ -76,8 +76,8 @@ func resize(t *testing.T, in *imgvips.GValue) (*imgvips.GValue, *imgvips.Operati
 		t.Fatalf("Expected *C.VipsImage in out")
 	}
 
-	w := imgvips.ImageWidth(image)
-	h := imgvips.ImageHeight(image)
+	w := image.Width()
+	h := image.Height()
 
 	hScale := float64(350) / float64(h)
 	wScale := float64(650) / float64(w)
@@ -97,11 +97,11 @@ func resize(t *testing.T, in *imgvips.GValue) (*imgvips.GValue, *imgvips.Operati
 		t.Fatalf("Expected *C.VipsImage in out")
 	}
 
-	if imgvips.ImageHeight(image) != 350 {
-		t.Errorf("Expected height %d, got %d", 350, imgvips.ImageHeight(image))
+	if image.Height() != 350 {
+		t.Errorf("Expected height %d, got %d", 350, image.Height())
 	}
-	if imgvips.ImageWidth(image) != 650 {
-		t.Errorf("Expected width %d, got %d", 650, imgvips.ImageWidth(image))
+	if image.Width() != 650 {
+		t.Errorf("Expected width %d, got %d", 650, image.Width())
 	}
 
 	return resizeOut, resizeOp
@@ -155,8 +155,8 @@ func BenchmarkOperation_Exec(b *testing.B) {
 			b.Fatalf("Unexpected error %v", err)
 		}
 
-		w := imgvips.ImageWidth(image)
-		h := imgvips.ImageHeight(image)
+		w := image.Width()
+		h := image.Height()
 
 		hScale := float64(350) / float64(h)
 		wScale := float64(650) / float64(w)
@@ -226,8 +226,8 @@ func ExampleOperation_Exec() {
 		return
 	}
 
-	w := imgvips.ImageWidth(image)
-	h := imgvips.ImageHeight(image)
+	w := image.Width()
+	h := image.Height()
 
 	hScale := float64(350) / float64(h)
 	wScale := float64(650) / float64(w)

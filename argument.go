@@ -10,41 +10,39 @@ import (
 	"unsafe"
 )
 
-// Argument contains key-value for set it to *C.VipsOperation
+// Argument contains key-gValue for set it to *C.VipsOperation
 type Argument struct {
-	name  *C.char
-	value *GValue
+	cName  *C.char
+	gValue *GValue
 
 	mu sync.RWMutex
 }
 
-// Name return argument name
-func (a *Argument) Name() *C.char {
+func (a *Argument) name() *C.char {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
-	return a.name
+	return a.cName
 }
 
-// Value return argument value
-func (a *Argument) Value() *GValue {
+func (a *Argument) value() *GValue {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
-	return a.value
+	return a.gValue
 }
 
-// Free freed argument name and value
+// Free freed argument cName and gValue
 func (a *Argument) Free() {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if a.name != nil {
-		C.free(unsafe.Pointer(a.name))
-		a.name = nil
+	if a.cName != nil {
+		C.free(unsafe.Pointer(a.cName))
+		a.cName = nil
 	}
-	if a.value != nil {
-		a.value.Free()
-		a.value = nil
+	if a.gValue != nil {
+		a.gValue.Free()
+		a.gValue = nil
 	}
 }

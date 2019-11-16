@@ -50,7 +50,7 @@ func (op *Operation) AddInput(name string, value *GValue) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
-	op.inputs = append(op.inputs, &Argument{name: C.CString(name), value: value})
+	op.inputs = append(op.inputs, &Argument{cName: C.CString(name), gValue: value})
 }
 
 // AddOutput adds argument for get from operation.
@@ -60,7 +60,7 @@ func (op *Operation) AddOutput(name string, value *GValue) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
-	op.outputs = append(op.outputs, &Argument{name: C.CString(name), value: value})
+	op.outputs = append(op.outputs, &Argument{cName: C.CString(name), gValue: value})
 }
 
 // Exec executes operation.
@@ -81,10 +81,10 @@ func (op *Operation) Exec() error {
 	}
 
 	for _, arg := range op.inputs {
-		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.Name(), arg.Value().GValue())
+		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
 	}
 	for _, arg := range op.outputs {
-		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.Name(), arg.Value().GValue())
+		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
 	}
 
 	if success := C.vips_cache_operation_buildp(&op.operation); success != 0 {
@@ -92,7 +92,7 @@ func (op *Operation) Exec() error {
 	}
 
 	for _, arg := range op.outputs {
-		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.Name(), arg.Value().GValue())
+		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
 	}
 
 	return nil

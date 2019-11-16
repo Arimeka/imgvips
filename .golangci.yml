@@ -1,0 +1,31 @@
+run:
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  deadline: 3m
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - dupSubExpr
+
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - gas
+    - gocritic
+    - gofmt
+    - goimports
+    - golint
+    - gosimple
+    - ineffassign
+    - megacheck
+    - misspell
+    - nakedret
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unconvert
+    - unparam
+    - varcheck
+    - unused
+  fast: false

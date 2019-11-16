@@ -98,10 +98,13 @@ func resize(in *imgvips.GValue) *imgvips.GValue {
 	}
 	defer op.Free()
 
-	scale := float64(width) / float64(imgvips.ImageWidth(image))
+	scale := float64(width) / float64(image.Width())
 
 	op.AddInput("in", in)
 	op.AddInput("scale", imgvips.GDouble(scale))
+	// Set kernel. Using int kinda working
+	// Commented because CI uses vips 8.2.2, which does not have this option
+	// op.AddInput("kernel", imgvips.GInt(int(C.VIPS_KERNEL_NEAREST)))
 	out := imgvips.GNullVipsImage()
 	op.AddOutput("out", out)
 
