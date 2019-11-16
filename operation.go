@@ -2,6 +2,7 @@ package imgvips
 
 /*
 #cgo pkg-config: vips
+#include "stdlib.h"
 #include "vips/vips.h"
 */
 import "C"

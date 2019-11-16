@@ -10,6 +10,9 @@ echo
 echo "==> Running gocritic <=="
 gocritic check ./... || exit_code=1
 echo
+echo "==> Running ineffassign <=="
+ineffassign ./* || exit_code=1
+echo
 echo "==> Running gocyclo <=="
 gocyclo -over 10 . || exit_code=1
 
