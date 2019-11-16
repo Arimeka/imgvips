@@ -1,0 +1,10 @@
+.idea
+*.iml
+.DS_Store
+source/
+
+# coverage
+coverage/*.out
+coverage/*.out.html
+coverage/*.out.svg
+*.test
