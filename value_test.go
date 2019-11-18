@@ -1,6 +1,7 @@
 package imgvips_test
 
 import (
+	"bytes"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -13,6 +14,10 @@ func TestGBoolean(t *testing.T) {
 	v := imgvips.GBoolean(true)
 
 	_, ok := v.Int()
+	if ok {
+		t.Fatal("Expected to be not ok")
+	}
+	_, ok = v.Bytes()
 	if ok {
 		t.Fatal("Expected to be not ok")
 	}
@@ -137,6 +142,51 @@ func TestGString(t *testing.T) {
 	if result != "" {
 		t.Fatalf("Expected return %s, got %s", "", result)
 	}
+}
+
+func TestGBytes(t *testing.T) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	data := []byte("foobar")
+	v := imgvips.GVipsBlob(data)
+
+	result, ok := v.Bytes()
+	if !ok {
+		t.Fatal("Expected to be ok")
+	}
+	if len(result) != len(data) {
+		t.Fatalf("Expected return data with %d size, got %d size", len(data), len(result))
+	}
+	if !bytes.Equal(result, data) {
+		t.Fatal("Expected result equal to expected data")
+	}
+
+	// Check multiply free
+	v.Free()
+	v.Free()
+
+	result, ok = v.Bytes()
+	if !ok {
+		t.Fatal("Expected to be ok")
+	}
+	if len(result) != 0 {
+		t.Fatalf("Expected return data with %d size, got %d size", 0, len(result))
+	}
+}
+
+func TestGNullVipsBlob(t *testing.T) {
+	v := imgvips.GNullVipsBlob()
+	result, ok := v.Bytes()
+	if !ok {
+		t.Fatal("Expected to be ok")
+	}
+	if len(result) != 0 {
+		t.Fatalf("Expected return data with %d size, got %d size", 0, len(result))
+	}
+
+	// Check multiply free
+	v.Free()
+	v.Free()
 }
 
 func TestGVipsImage(t *testing.T) {
@@ -580,5 +630,16 @@ func compareNewImageVals(t *testing.T, val1, val2 *imgvips.GValue) {
 	}
 	if result2 == result1 {
 		t.Errorf("Expected val2 contain %p different from val1 %p", result2, result1)
+	}
+}
+
+func TestGValue_CopyBytes(t *testing.T) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	v := imgvips.GNullVipsBlob()
+
+	_, err := v.Copy()
+	if err != imgvips.ErrCopyForbidden {
+		t.Fatalf("Expected error %v, got %v", imgvips.ErrCopyForbidden, err)
 	}
 }
