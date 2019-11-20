@@ -2,6 +2,7 @@ package imgvips_test
 
 import (
 	"errors"
+	"io/ioutil"
 	"log"
 	"testing"
 
@@ -47,6 +48,33 @@ func TestOperation_Exec(t *testing.T) {
 	save(t, resizeOut)
 }
 
+func TestOperation_ExecFromBytes(t *testing.T) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	out, loadOp := webpLoadBytes(t)
+	defer loadOp.Free()
+
+	resizeOut, resizeOp := resize(t, out)
+	defer resizeOp.Free()
+
+	save(t, resizeOut)
+}
+
+func TestOperation_ExecSaveToBytes(t *testing.T) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	out, loadOp := webpLoadBytes(t)
+	defer loadOp.Free()
+
+	resizeOut, resizeOp := resize(t, out)
+	defer resizeOp.Free()
+
+	bytes := saveToBytes(t, resizeOut)
+	if len(bytes) == 0 {
+		t.Fatal("Expected some data, got nil")
+	}
+}
+
 func webpLoad(t *testing.T) (*imgvips.GValue, *imgvips.Operation) {
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {
@@ -56,6 +84,29 @@ func webpLoad(t *testing.T) (*imgvips.GValue, *imgvips.Operation) {
 	out := imgvips.GNullVipsImage()
 	op.AddInput("filename", imgvips.GString("./tests/fixtures/img.webp"))
 	op.AddInput("scale", imgvips.GDouble(0.1))
+	op.AddOutput("out", out)
+
+	if err := op.Exec(); err != nil {
+		t.Fatalf("Unexpected error %v", err)
+	}
+
+	return out, op
+}
+
+func webpLoadBytes(t *testing.T) (*imgvips.GValue, *imgvips.Operation) {
+	data, err := ioutil.ReadFile("./tests/fixtures/small.webp")
+	if err != nil {
+		t.Fatalf("Unexpected error %v", err)
+	}
+
+	op, err := imgvips.NewOperation("webpload_buffer")
+	if err != nil {
+		t.Fatalf("Unexpected error %v", err)
+	}
+
+	out := imgvips.GNullVipsImage()
+	op.AddInput("buffer", imgvips.GVipsBlob(data))
+	op.AddInput("scale", imgvips.GDouble(6))
 	op.AddOutput("out", out)
 
 	if err := op.Exec(); err != nil {
@@ -121,6 +172,30 @@ func save(t *testing.T, in *imgvips.GValue) {
 	if err := saveOp.Exec(); err != nil {
 		t.Fatalf("Unexpected error %v", err)
 	}
+}
+
+func saveToBytes(t *testing.T, in *imgvips.GValue) []byte {
+	saveOp, err := imgvips.NewOperation("jpegsave_buffer")
+	if err != nil {
+		t.Fatalf("Unexpected error %v", err)
+	}
+	defer saveOp.Free()
+
+	gData := imgvips.GNullVipsBlob()
+	saveOp.AddInput("in", in)
+	saveOp.AddInput("Q", imgvips.GInt(50))
+	saveOp.AddOutput("buffer", gData)
+
+	if err := saveOp.Exec(); err != nil {
+		t.Fatalf("Unexpected error %v", err)
+	}
+
+	data, ok := gData.Bytes()
+	if !ok {
+		t.Fatalf("Expected *C.VipsBlob")
+	}
+
+	return data
 }
 
 func BenchmarkOperation_Exec(b *testing.B) {
@@ -195,7 +270,7 @@ func BenchmarkOperation_Exec(b *testing.B) {
 	}
 }
 
-func ExampleOperation_Exec() {
+func Example() {
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {
 		log.Println(err)
