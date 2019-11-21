@@ -13,7 +13,7 @@ import (
 // Argument contains key-gValue for set it to *C.VipsOperation
 type Argument struct {
 	cName  *C.char
-	gValue *GValue
+	gValue Value
 
 	mu sync.RWMutex
 }
@@ -25,7 +25,7 @@ func (a *Argument) name() *C.char {
 	return a.cName
 }
 
-func (a *Argument) value() *GValue {
+func (a *Argument) value() Value {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
