@@ -87,9 +87,12 @@ func (op *Operation) Exec() error {
 		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
 	}
 
-	if success := C.vips_cache_operation_buildp(&op.operation); success != 0 {
+	cOp := C.vips_cache_operation_build(op.operation)
+	if cOp == nil {
 		return vipsError()
 	}
+	C.g_object_unref(C.gpointer(op.operation))
+	op.operation = cOp
 
 	for _, arg := range op.outputs {
 		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))

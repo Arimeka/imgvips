@@ -375,12 +375,12 @@ func GVipsBlob(data []byte) *GValue {
 
 		val.gValue = nil
 	}
-
-	cBytes := C.CBytes(data)
-	defer C.free(cBytes)
+	if len(data) == 0 {
+		return v
+	}
 
 	size := C.ulong(len(data))
-	blob := C.vips_blob_copy(cBytes, size)
+	blob := C.vips_blob_copy(unsafe.Pointer(&data[0]), size)
 
 	C.g_value_set_boxed(v.gValue, C.gconstpointer(blob))
 
@@ -480,22 +480,20 @@ func GNullVipsImage() *GValue {
 		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cIn, val.gValue)
 		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, &gVal)
 
-		success := C.vips_cache_operation_buildp(&op.operation)
+		var success bool
+		cOp := C.vips_cache_operation_build(op.operation)
+		if cOp != nil {
+			success = true
+			C.g_object_unref(C.gpointer(op.operation))
+			op.operation = cOp
+		}
 
 		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, &gVal)
 
-		if success != 0 {
-			original := (*C.VipsImage)(C.g_value_get_object(v.gValue))
-			ptr := C.g_value_peek_pointer(&gVal)
-			if int(C.vips_image_get_width(original)) != 1 || int(C.vips_image_get_height(original)) != 1 || ptr == nil {
-				if ptr != nil {
-					C.g_object_unref(ptr)
-				}
-				C.g_value_unset(&gVal)
-
+		if !success {
+			if C.g_value_peek_pointer(&gVal) == nil {
 				return nil, vipsError()
 			}
-
 		}
 
 		return &GValue{

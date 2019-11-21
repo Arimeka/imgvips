@@ -2,10 +2,9 @@ run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   deadline: 3m
 
-linters-settings:
-  gocritic:
-    disabled-checks:
-      - dupSubExpr
+service:
+  prepare:
+    - apt-get update && apt-get install -y gcc pkg-config libvips-dev
 
 linters:
   enable:
