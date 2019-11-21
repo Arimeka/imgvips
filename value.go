@@ -18,6 +18,14 @@ var (
 	ErrCopyForbidden = errors.New("copy forbidden for this type")
 )
 
+// Value is interface for create own value for operation argument
+type Value interface {
+	// Free freed data in C
+	Free()
+	// Ptr return unsafe pointer to *C.GValue
+	Ptr() unsafe.Pointer
+}
+
 // GValue contains glib gValue and its type
 type GValue struct {
 	gType  C.GType
@@ -28,12 +36,12 @@ type GValue struct {
 	mu   sync.RWMutex
 }
 
-// gValue return gValue *C.gValue
-func (v *GValue) value() *C.GValue {
+// Ptr return unsafe pointer to *C.GValue
+func (v *GValue) Ptr() unsafe.Pointer {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
-	return v.gValue
+	return unsafe.Pointer(v.gValue)
 }
 
 // Copy create new instance of *GValue with new *C.gValue and run copy() func

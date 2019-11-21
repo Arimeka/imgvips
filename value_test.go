@@ -542,8 +542,8 @@ func compareImageValsFull(t *testing.T, val1, val2 *imgvips.GValue) {
 	if result2 == nil {
 		t.Error("Expected val1 contain image")
 	}
-	if result2 == result1 {
-		t.Errorf("Expected val2 contain %p different from val1 %p", result2, result1)
+	if result2.Ptr() == result1.Ptr() {
+		t.Errorf("Expected val2 contain %p different from val1 %p", result2.Ptr(), result1.Ptr())
 	}
 }
 

@@ -46,7 +46,7 @@ type Operation struct {
 
 // AddInput adds argument for set to operation.
 // After call *Operation.Exec(), all values from input arguments will be freed.
-func (op *Operation) AddInput(name string, value *GValue) {
+func (op *Operation) AddInput(name string, value Value) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
@@ -56,7 +56,7 @@ func (op *Operation) AddInput(name string, value *GValue) {
 // AddOutput adds argument for get from operation.
 // After call Exec(), all values from output arguments will be updated from operation result.
 // This arguments will be freed after call *Operation.Free()
-func (op *Operation) AddOutput(name string, value *GValue) {
+func (op *Operation) AddOutput(name string, value Value) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
@@ -81,10 +81,10 @@ func (op *Operation) Exec() error {
 	}
 
 	for _, arg := range op.inputs {
-		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
+		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
 	}
 	for _, arg := range op.outputs {
-		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
+		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
 	}
 
 	if success := C.vips_cache_operation_buildp(&op.operation); success != 0 {
@@ -92,7 +92,7 @@ func (op *Operation) Exec() error {
 	}
 
 	for _, arg := range op.outputs {
-		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), arg.value().value())
+		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
 	}
 
 	return nil
