@@ -270,6 +270,83 @@ func BenchmarkOperation_Exec(b *testing.B) {
 	}
 }
 
+func BenchmarkOperation_ExecBytes(b *testing.B) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	data, err := ioutil.ReadFile("./tests/fixtures/img.webp")
+	if err != nil {
+		b.Fatalf("Unexpected error %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		op, err := imgvips.NewOperation("webpload_buffer")
+		if err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		out := imgvips.GNullVipsImage()
+		op.AddInput("buffer", imgvips.GVipsBlob(data))
+		op.AddInput("scale", imgvips.GDouble(0.1))
+		op.AddOutput("out", out)
+
+		if err := op.Exec(); err != nil {
+			op.Free()
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		image, ok := out.Image()
+		if !ok {
+			op.Free()
+			b.Fatalf("Expected *C.VipsImage in out")
+		}
+
+		resizeOp, err := imgvips.NewOperation("resize")
+		if err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		w := image.Width()
+		h := image.Height()
+
+		hScale := float64(350) / float64(h)
+		wScale := float64(650) / float64(w)
+
+		resizeOut := imgvips.GNullVipsImage()
+		resizeOp.AddInput("in", out)
+		resizeOp.AddInput("scale", imgvips.GDouble(wScale))
+		resizeOp.AddInput("vscale", imgvips.GDouble(hScale))
+		resizeOp.AddOutput("out", resizeOut)
+
+		if err := resizeOp.Exec(); err != nil {
+			op.Free()
+			resizeOp.Free()
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		saveOp, err := imgvips.NewOperation("pngsave")
+		if err != nil {
+			op.Free()
+			resizeOp.Free()
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		saveOp.AddInput("in", resizeOut)
+		saveOp.AddInput("filename", imgvips.GString("/dev/null"))
+
+		if err := saveOp.Exec(); err != nil {
+			op.Free()
+			resizeOp.Free()
+			saveOp.Free()
+			b.Fatalf("Unexpected error %v", err)
+		}
+		op.Free()
+		resizeOp.Free()
+		saveOp.Free()
+	}
+}
+
 func Example() {
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {

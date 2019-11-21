@@ -147,10 +147,20 @@ func TestGString(t *testing.T) {
 func TestGBytes(t *testing.T) {
 	imgvips.VipsDetectMemoryLeak(true)
 
-	data := []byte("foobar")
-	v := imgvips.GVipsBlob(data)
-
+	v := imgvips.GVipsBlob(nil)
 	result, ok := v.Bytes()
+	if !ok {
+		t.Fatal("Expected to be ok")
+	}
+	if len(result) != 0 {
+		t.Fatalf("Expected return data with %d size, got %d size", 0, len(result))
+	}
+	v.Free()
+
+	data := []byte("foobar")
+	v = imgvips.GVipsBlob(data)
+
+	result, ok = v.Bytes()
 	if !ok {
 		t.Fatal("Expected to be ok")
 	}
