@@ -589,57 +589,10 @@ func TestGValue_CopyNewImage(t *testing.T) {
 	imgvips.VipsDetectMemoryLeak(true)
 
 	val1 := imgvips.GVipsImage()
-	val2, err := val1.Copy()
-	if err != nil {
-		t.Fatalf("Unexpected error %v", err)
-	}
-
-	compareNewImageVals(t, val1, val2)
-
-	val1.Free()
-	result1, ok := val1.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
-	}
-	if result1 != nil {
-		t.Error("Expected val1 to be freed")
-	}
-
-	result2, ok := val2.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
-	}
-	if result2 == nil {
-		t.Error("Expected val2 contain image")
-	}
-
-	val2.Free()
-	result2, ok = val2.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
-	}
-	if result2 != nil {
-		t.Error("Expected val2 to be freed")
-	}
-}
-
-func compareNewImageVals(t *testing.T, val1, val2 *imgvips.GValue) {
-	result1, ok := val1.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
-	}
-	if result1 == nil {
-		t.Error("Expected val1 contain image")
-	}
-	result2, ok := val2.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
-	}
-	if result2 == nil {
-		t.Error("Expected val1 contain image")
-	}
-	if result2 == result1 {
-		t.Errorf("Expected val2 contain %p different from val1 %p", result2, result1)
+	defer val1.Free()
+	_, err := val1.Copy()
+	if err == nil {
+		t.Fatal("Expected to return error, got nil")
 	}
 }
 
