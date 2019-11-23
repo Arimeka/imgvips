@@ -18,12 +18,13 @@ import (
 const (
 	defaultFilename = "./tests/fixtures/img.webp"
 	defaultOutput   = "./tests/fixtures/out.png"
-	defaultWidth    = 100
+	defaultWidth    = 450
+	defaultHeight   = 300
 )
 
 var (
 	inFilename, outFilename string
-	width                   int
+	width, height           int
 )
 
 func init() {
@@ -35,6 +36,9 @@ func init() {
 	flag.IntVar(&width, "width", defaultWidth, "resize to width")
 	flag.IntVar(&width, "w", defaultWidth, "resize to width (shorthand)")
 
+	flag.IntVar(&height, "height", defaultHeight, "resize to height")
+	flag.IntVar(&height, "h", defaultHeight, "resize to height (shorthand)")
+
 	flag.StringVar(&outFilename, "output", defaultOutput, "path to output file")
 	flag.StringVar(&outFilename, "o", defaultOutput, "path to output file (shorthand)")
 }
@@ -44,10 +48,10 @@ func main() {
 
 	// Load file
 	loadedImage := load()
-	// Resize
-	resizedImage := resize(loadedImage)
+	// Crop
+	croppedImage := crop(loadedImage)
 	// Save
-	save(resizedImage)
+	save(croppedImage)
 }
 
 func load() *imgvips.GValue {
@@ -86,25 +90,31 @@ func load() *imgvips.GValue {
 	return result
 }
 
-func resize(in *imgvips.GValue) *imgvips.GValue {
+func crop(in *imgvips.GValue) *imgvips.GValue {
 	image, ok := in.Image()
 	if !ok {
 		log.Fatal("value is not image")
 	}
 
-	op, err := imgvips.NewOperation("resize")
+	// If original image lower than crop size - return original image
+	if image.Width() <= width && image.Height() <= height {
+		return in
+	}
+
+	op, err := imgvips.NewOperation("crop")
 	if err != nil {
-		log.Fatalf("operation resize not found: %v", err)
+		log.Fatalf("operation crop not found: %v", err)
 	}
 	defer op.Free()
 
-	scale := float64(width) / float64(image.Width())
-
-	op.AddInput("in", in)
-	op.AddInput("scale", imgvips.GDouble(scale))
-	// Set kernel. Using int kinda working
-	// Commented because CI uses vips 8.2.2, which does not have this option
-	// op.AddInput("kernel", imgvips.GInt(int(C.VIPS_KERNEL_NEAREST)))
+	op.AddInput("input", in)
+	if image.Width() > width {
+		left := (image.Width() - width) / 2
+		op.AddInput("left", imgvips.GInt(left))
+	}
+	op.AddInput("top", imgvips.GInt(0))
+	op.AddInput("width", imgvips.GInt(width))
+	op.AddInput("height", imgvips.GInt(height))
 	out := imgvips.GNullVipsImage()
 	op.AddOutput("out", out)
 
