@@ -30,7 +30,7 @@ var (
 func init() {
 	imgvips.VipsDetectMemoryLeak(true)
 
-	flag.StringVar(&inFilename, "inFilename", defaultFilename, "path to input file")
+	flag.StringVar(&inFilename, "filename", defaultFilename, "path to input file")
 	flag.StringVar(&inFilename, "f", defaultFilename, "path to input file (shorthand)")
 
 	flag.IntVar(&width, "width", defaultWidth, "resize to width")

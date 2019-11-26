@@ -355,9 +355,13 @@ func GString(value string) *GValue {
 	return v
 }
 
-// GVipsBlob copy data to VipsBlob
+// GVipsBlob create VipsBlob from bytes array.
+//
+// You must protect bytes array from GC and modification while using the VipsImage loaded from this blob.
+//
 // VipsBlob is used in load_buffer and save_buffer.
 // VipsBlob is a boxed type, so we use g_value_set_boxed instead of g_value_set_object.
+//
 // Calling Copy() at GValue with type VipsBlob is forbidden.
 func GVipsBlob(data []byte) *GValue {
 	v := GNullVipsBlob()
@@ -380,7 +384,7 @@ func GVipsBlob(data []byte) *GValue {
 	}
 
 	size := C.ulong(len(data))
-	blob := C.vips_blob_copy(unsafe.Pointer(&data[0]), size)
+	blob := C.vips_blob_new(nil, unsafe.Pointer(&data[0]), size)
 
 	C.g_value_set_boxed(v.gValue, C.gconstpointer(blob))
 
