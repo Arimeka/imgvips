@@ -50,7 +50,7 @@ func (op *Operation) AddInput(name string, value Value) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
-	op.inputs = append(op.inputs, &Argument{cName: C.CString(name), gValue: value})
+	op.inputs = append(op.inputs, &Argument{cName: cStringsCache.get(name), gValue: value})
 }
 
 // AddOutput adds argument for get from operation.
@@ -60,7 +60,7 @@ func (op *Operation) AddOutput(name string, value Value) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
 
-	op.outputs = append(op.outputs, &Argument{cName: C.CString(name), gValue: value})
+	op.outputs = append(op.outputs, &Argument{cName: cStringsCache.get(name), gValue: value})
 }
 
 // Exec executes operation.

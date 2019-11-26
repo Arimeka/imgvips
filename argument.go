@@ -7,7 +7,6 @@ import "C"
 
 import (
 	"sync"
-	"unsafe"
 )
 
 // Argument contains key-gValue for set it to *C.VipsOperation
@@ -38,7 +37,6 @@ func (a *Argument) Free() {
 	defer a.mu.Unlock()
 
 	if a.cName != nil {
-		C.free(unsafe.Pointer(a.cName))
 		a.cName = nil
 	}
 	if a.gValue != nil {
