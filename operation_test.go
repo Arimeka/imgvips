@@ -99,6 +99,10 @@ func webpLoadBytes(t *testing.T) (*imgvips.GValue, *imgvips.Operation) {
 		t.Fatalf("Unexpected error %v", err)
 	}
 
+	return webpLoadBytesFromData(t, data)
+}
+
+func webpLoadBytesFromData(t testing.TB, data []byte) (*imgvips.GValue, *imgvips.Operation) {
 	op, err := imgvips.NewOperation("webpload_buffer")
 	if err != nil {
 		t.Fatalf("Unexpected error %v", err)
@@ -174,8 +178,8 @@ func save(t *testing.T, in *imgvips.GValue) {
 	}
 }
 
-func saveToBytes(t *testing.T, in *imgvips.GValue) []byte {
-	saveOp, err := imgvips.NewOperation("jpegsave_buffer")
+func saveToBytes(t testing.TB, in *imgvips.GValue) []byte {
+	saveOp, err := imgvips.NewOperation("pngsave_buffer")
 	if err != nil {
 		t.Fatalf("Unexpected error %v", err)
 	}
@@ -183,7 +187,6 @@ func saveToBytes(t *testing.T, in *imgvips.GValue) []byte {
 
 	gData := imgvips.GNullVipsBlob()
 	saveOp.AddInput("in", in)
-	saveOp.AddInput("Q", imgvips.GInt(50))
 	saveOp.AddOutput("buffer", gData)
 
 	if err := saveOp.Exec(); err != nil {
@@ -247,6 +250,7 @@ func BenchmarkOperation_Exec(b *testing.B) {
 			resizeOp.Free()
 			b.Fatalf("Unexpected error %v", err)
 		}
+		op.Free()
 
 		saveOp, err := imgvips.NewOperation("pngsave")
 		if err != nil {
@@ -324,26 +328,12 @@ func BenchmarkOperation_ExecBytes(b *testing.B) {
 			resizeOp.Free()
 			b.Fatalf("Unexpected error %v", err)
 		}
+		op.Free()
 
-		saveOp, err := imgvips.NewOperation("pngsave")
-		if err != nil {
-			op.Free()
-			resizeOp.Free()
-			b.Fatalf("Unexpected error %v", err)
-		}
+		saveToBytes(b, resizeOut)
 
-		saveOp.AddInput("in", resizeOut)
-		saveOp.AddInput("filename", imgvips.GString("/dev/null"))
-
-		if err := saveOp.Exec(); err != nil {
-			op.Free()
-			resizeOp.Free()
-			saveOp.Free()
-			b.Fatalf("Unexpected error %v", err)
-		}
 		op.Free()
 		resizeOp.Free()
-		saveOp.Free()
 	}
 }
 
@@ -410,5 +400,28 @@ func Example() {
 	if err := saveOp.Exec(); err != nil {
 		log.Println(err)
 		return
+	}
+}
+
+func BenchmarkOperation_ExecOpenFilename(b *testing.B) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		op, err := imgvips.NewOperation("webpload")
+		if err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		out := imgvips.GNullVipsImage()
+		op.AddInput("filename", imgvips.GString("./tests/fixtures/img.webp"))
+		op.AddInput("scale", imgvips.GDouble(0.1))
+		op.AddOutput("out", out)
+
+		if err := op.Exec(); err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+		op.Free()
 	}
 }
