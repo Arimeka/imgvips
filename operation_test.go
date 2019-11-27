@@ -250,6 +250,7 @@ func BenchmarkOperation_Exec(b *testing.B) {
 			resizeOp.Free()
 			b.Fatalf("Unexpected error %v", err)
 		}
+		op.Free()
 
 		saveOp, err := imgvips.NewOperation("pngsave")
 		if err != nil {
@@ -327,6 +328,7 @@ func BenchmarkOperation_ExecBytes(b *testing.B) {
 			resizeOp.Free()
 			b.Fatalf("Unexpected error %v", err)
 		}
+		op.Free()
 
 		saveToBytes(b, resizeOut)
 
@@ -398,5 +400,28 @@ func Example() {
 	if err := saveOp.Exec(); err != nil {
 		log.Println(err)
 		return
+	}
+}
+
+func BenchmarkOperation_ExecOpenFilename(b *testing.B) {
+	imgvips.VipsDetectMemoryLeak(true)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		op, err := imgvips.NewOperation("webpload")
+		if err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+
+		out := imgvips.GNullVipsImage()
+		op.AddInput("filename", imgvips.GString("./tests/fixtures/img.webp"))
+		op.AddInput("scale", imgvips.GDouble(0.1))
+		op.AddOutput("out", out)
+
+		if err := op.Exec(); err != nil {
+			b.Fatalf("Unexpected error %v", err)
+		}
+		op.Free()
 	}
 }

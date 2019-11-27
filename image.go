@@ -25,7 +25,7 @@ func (i *Image) Ptr() unsafe.Pointer {
 // Width return image width
 // Return 0 if image was freed
 func (i *Image) Width() int {
-	if i.val.gValue == nil {
+	if i.val.wasFreed() {
 		return 0
 	}
 
@@ -35,7 +35,7 @@ func (i *Image) Width() int {
 // Height return image height
 // Return 0 if image was freed
 func (i *Image) Height() int {
-	if i.val.gValue == nil {
+	if i.val.wasFreed() {
 		return 0
 	}
 

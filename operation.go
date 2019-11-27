@@ -21,10 +21,7 @@ var (
 // NewOperation initialize new *C.VipsOperation.
 // If libvips don't known operation with provided name, function return error.
 func NewOperation(name string) (*Operation, error) {
-	cStr := C.CString(name)
-	defer C.free(unsafe.Pointer(cStr))
-
-	op := C.vips_operation_new(cStr)
+	op := C.vips_operation_new(cStringsCache.get(name))
 	if op == nil {
 		return nil, vipsError()
 	}
