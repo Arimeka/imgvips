@@ -23,6 +23,12 @@ func TestNewOperation(t *testing.T) {
 }
 
 func TestOperation_ExecFree(t *testing.T) {
+	imgvips.VipsDetectMemoryLeak(true)
+	imgvips.VipsCacheSetMaxMem(-10)
+	imgvips.VipsCacheSetMax(-10)
+	imgvips.VipsConcurrencySet(-10)
+	imgvips.VipsVectorSetEnables(true)
+
 	op, err := imgvips.NewOperation("jpegload")
 	if err != nil {
 		t.Fatalf("Unexpected error %v", err)
@@ -38,6 +44,9 @@ func TestOperation_ExecFree(t *testing.T) {
 
 func TestOperation_Exec(t *testing.T) {
 	imgvips.VipsDetectMemoryLeak(true)
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+	imgvips.VipsVectorSetEnables(false)
 
 	out, loadOp := webpLoad(t)
 	defer loadOp.Free()
@@ -201,8 +210,12 @@ func saveToBytes(t testing.TB, in *imgvips.GValue) []byte {
 	return data
 }
 
+// nolint:funlen // For testing
 func BenchmarkOperation_Exec(b *testing.B) {
 	imgvips.VipsDetectMemoryLeak(true)
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+	imgvips.VipsVectorSetEnables(false)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -274,8 +287,12 @@ func BenchmarkOperation_Exec(b *testing.B) {
 	}
 }
 
+// nolint:funlen // For testing
 func BenchmarkOperation_ExecBytes(b *testing.B) {
 	imgvips.VipsDetectMemoryLeak(true)
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+	imgvips.VipsVectorSetEnables(false)
 
 	data, err := ioutil.ReadFile("./tests/fixtures/img.webp")
 	if err != nil {
@@ -337,6 +354,7 @@ func BenchmarkOperation_ExecBytes(b *testing.B) {
 	}
 }
 
+// nolint:funlen // For testing
 func Example() {
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {

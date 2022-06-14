@@ -68,62 +68,66 @@ func GNullVipsImage() *GValue {
 	v.freed = false
 
 	if v.free == nil {
-		v.free = func(val *GValue) {
-			if val.freed {
-				return
-			}
-			ptr := C.g_value_peek_pointer(val.gValue)
-			if ptr != nil {
-				C.g_object_unref(ptr)
-			}
-			C.g_value_reset(val.gValue)
-			gVipsImagePool.Put(val)
-		}
+		v.free = gNullVipsImageFree
 	}
 	if v.copy == nil {
-		v.copy = func(val *GValue) (*GValue, error) {
-			newVal := gVipsImagePool.Get().(*GValue)
-			newVal.freed = false
-			if newVal.free == nil {
-				newVal.free = val.free
-			}
-			if newVal.copy == nil {
-				newVal.copy = val.copy
-			}
-
-			ptr := C.g_value_peek_pointer(val.gValue)
-			if ptr == nil {
-				return newVal, nil
-			}
-
-			op, err := NewOperation("copy")
-			if err != nil {
-				return nil, err
-			}
-			defer op.Free()
-
-			cIn := cStringsCache.get("in")
-			cOut := cStringsCache.get("out")
-
-			C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cIn, val.gValue)
-			C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
-
-			newOp := C.vips_cache_operation_build(op.operation)
-			if newOp == nil {
-				C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
-				newVal.free(newVal)
-
-				return nil, vipsError()
-			}
-
-			C.g_object_unref(C.gpointer(op.operation))
-			op.operation = newOp
-
-			C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
-
-			return newVal, nil
-		}
+		v.copy = gNullVipsImageCopy
 	}
 
 	return v
+}
+
+func gNullVipsImageFree(val *GValue) {
+	if val.freed {
+		return
+	}
+	ptr := C.g_value_peek_pointer(val.gValue)
+	if ptr != nil {
+		C.g_object_unref(ptr)
+	}
+	C.g_value_reset(val.gValue)
+	gVipsImagePool.Put(val)
+}
+
+func gNullVipsImageCopy(val *GValue) (*GValue, error) {
+	newVal := gVipsImagePool.Get().(*GValue)
+	newVal.freed = false
+	if newVal.free == nil {
+		newVal.free = val.free
+	}
+	if newVal.copy == nil {
+		newVal.copy = val.copy
+	}
+
+	ptr := C.g_value_peek_pointer(val.gValue)
+	if ptr == nil {
+		return newVal, nil
+	}
+
+	op, err := NewOperation("copy")
+	if err != nil {
+		return nil, err
+	}
+	defer op.Free()
+
+	cIn := cStringsCache.get("in")
+	cOut := cStringsCache.get("out")
+
+	C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cIn, val.gValue)
+	C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
+
+	newOp := C.vips_cache_operation_build(op.operation)
+	if newOp == nil {
+		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
+		newVal.free(newVal)
+
+		return nil, vipsError()
+	}
+
+	C.g_object_unref(C.gpointer(op.operation))
+	op.operation = newOp
+
+	C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
+
+	return newVal, nil
 }

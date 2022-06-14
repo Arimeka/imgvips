@@ -40,7 +40,7 @@ func TestGString(t *testing.T) {
 }
 
 func TestGValue_CopyString(t *testing.T) {
-	v := strconv.Itoa(rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000))
+	v := strconv.Itoa(rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000)) // nolint:gosec // For testing
 
 	val1 := imgvips.GString(v)
 

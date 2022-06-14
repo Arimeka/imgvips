@@ -9,7 +9,7 @@ import (
 )
 
 func TestGInt(t *testing.T) {
-	value := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10000)
+	value := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10000) // nolint:gosec // For testing
 
 	v := imgvips.GInt(value)
 	defer v.Free()
@@ -41,7 +41,7 @@ func TestGInt(t *testing.T) {
 }
 
 func TestGValue_CopyInt(t *testing.T) {
-	v := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000)
+	v := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000) // nolint:gosec // For testing
 
 	val1 := imgvips.GInt(v)
 

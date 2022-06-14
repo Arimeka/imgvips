@@ -9,7 +9,7 @@ import (
 )
 
 func TestGDouble(t *testing.T) {
-	value := rand.New(rand.NewSource(time.Now().UnixNano())).Float64()
+	value := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	v := imgvips.GDouble(value)
 
@@ -40,7 +40,7 @@ func TestGDouble(t *testing.T) {
 }
 
 func TestGValue_CopyDouble(t *testing.T) {
-	v := rand.New(rand.NewSource(time.Now().UnixNano())).Float64()
+	v := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	val1 := imgvips.GDouble(v)
 
