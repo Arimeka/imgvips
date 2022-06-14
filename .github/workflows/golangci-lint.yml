@@ -19,6 +19,12 @@ jobs:
         with:
           go-version: 1.17
       - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y gobject-introspection gtk-doc-tools libcfitsio-dev libfftw3-dev libgif-dev \
+                                  libgs-dev libmatio-dev libopenslide-dev liborc-0.4-dev libpango1.0-dev \
+                                  libpoppler-glib-dev libwebp-dev libvips-dev && \
+          sudo pkg-config --modversion vips
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
