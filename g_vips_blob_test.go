@@ -40,8 +40,8 @@ func TestGBytes(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Bytes()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if len(result) != 0 {
 		t.Fatalf("Expected return data with %d size, got %d size", 0, len(result))

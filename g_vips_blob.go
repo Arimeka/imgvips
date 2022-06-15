@@ -8,47 +8,28 @@ package imgvips
 import "C"
 
 import (
-	"sync"
 	"unsafe"
 )
 
-var gVipsBlobPool = sync.Pool{
-	New: func() interface{} {
-		var gValue C.GValue
-
-		v := &GValue{
-			gType:  C.vips_blob_get_type(),
-			gValue: &gValue,
-			copy: func(val *GValue) (*GValue, error) {
-				return nil, ErrCopyForbidden
-			},
-		}
-
-		C.g_value_init(v.gValue, v.gType)
-
-		return v
-	},
-}
-
 func freeVipsBlobAreaFn(val *GValue) {
+	if val.freed {
+		return
+	}
 	ptr := C.g_value_peek_pointer(val.gValue)
 	if ptr != nil {
 		// VipsBlob can be freed like *C.VipsArea
 		C.vips_area_unref((*C.VipsArea)(ptr))
 	}
-	C.g_value_reset(val.gValue)
-	val.free = freeVipsBlobNullFn
-
-	gVipsBlobPool.Put(val)
+	C.g_value_unset(val.gValue)
+	val.gType = C.G_TYPE_NONE
 }
 
 func freeVipsBlobNullFn(val *GValue) {
 	if val.freed {
 		return
 	}
-	C.g_value_reset(val.gValue)
-
-	gVipsBlobPool.Put(val)
+	C.g_value_unset(val.gValue)
+	val.gType = C.G_TYPE_NONE
 }
 
 // Bytes return bytes slice from GValue.
@@ -105,12 +86,18 @@ func GVipsBlob(data []byte) *GValue {
 // GNullVipsBlob create empty glib object gValue with type for *C.VipsBlob
 // Calling Copy() at GValue with type VipsBlob is forbidden.
 func GNullVipsBlob() *GValue {
-	v := gVipsBlobPool.Get().(*GValue)
-	v.freed = false
+	var gValue C.GValue
 
-	if v.free == nil {
-		v.free = freeVipsBlobNullFn
+	v := &GValue{
+		gType:  C.vips_blob_get_type(),
+		gValue: &gValue,
+		copy: func(val *GValue) (*GValue, error) {
+			return nil, ErrCopyForbidden
+		},
+		free: freeVipsBlobNullFn,
 	}
+
+	C.g_value_init(v.gValue, v.gType)
 
 	return v
 }

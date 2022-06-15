@@ -8,23 +8,38 @@ package imgvips
 import "C"
 
 import (
-	"sync"
 	"unsafe"
 )
 
-var gStringPool = sync.Pool{
-	New: func() interface{} {
-		var gValue C.GValue
+func newGString() *GValue {
+	var gValue C.GValue
 
-		v := &GValue{
-			gType:  C.G_TYPE_STRING,
-			gValue: &gValue,
-		}
+	v := &GValue{
+		gType:  C.G_TYPE_STRING,
+		gValue: &gValue,
+		free: func(val *GValue) {
+			if val.freed {
+				return
+			}
+			C.g_value_unset(val.gValue)
+			val.gType = C.G_TYPE_NONE
+		},
+		copy: func(val *GValue) (*GValue, error) {
+			newVal := newGString()
 
-		C.g_value_init(v.gValue, v.gType)
+			str := C.GoString((*C.char)(unsafe.Pointer(C.g_value_get_string(val.gValue))))
+			cStr := C.CString(str)
+			defer C.free(unsafe.Pointer(cStr))
 
-		return v
-	},
+			C.g_value_set_string(newVal.gValue, cStr)
+
+			return newVal, nil
+		},
+	}
+
+	C.g_value_init(v.gValue, v.gType)
+
+	return v
 }
 
 // String return string gValue, if type is GString.
@@ -43,42 +58,11 @@ func (v *GValue) String() (value string, ok bool) {
 
 // GString transform string gValue to glib gValue
 func GString(value string) *GValue {
-	v := gStringPool.Get().(*GValue)
-	v.freed = false
+	v := newGString()
 
 	cStr := C.CString(value)
 	defer C.free(unsafe.Pointer(cStr))
 	C.g_value_set_string(v.gValue, cStr)
-
-	if v.free == nil {
-		v.free = func(val *GValue) {
-			if val.freed {
-				return
-			}
-			C.g_value_reset(val.gValue)
-			gStringPool.Put(val)
-		}
-	}
-	if v.copy == nil {
-		v.copy = func(val *GValue) (*GValue, error) {
-			newVal := gStringPool.Get().(*GValue)
-			newVal.freed = false
-			if newVal.free == nil {
-				newVal.free = val.free
-			}
-			if newVal.copy == nil {
-				newVal.copy = val.copy
-			}
-
-			str := C.GoString((*C.char)(unsafe.Pointer(C.g_value_get_string(val.gValue))))
-			cStr := C.CString(str)
-			defer C.free(unsafe.Pointer(cStr))
-
-			C.g_value_set_string(newVal.gValue, cStr)
-
-			return newVal, nil
-		}
-	}
 
 	return v
 }

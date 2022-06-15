@@ -27,8 +27,8 @@ func TestGVipsImage(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != nil {
 		t.Fatalf("Expected return %v, got %v", nil, result)
@@ -56,8 +56,8 @@ func TestGNullVipsImage(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != nil {
 		t.Fatalf("Expected return %v, got %v", nil, result)
@@ -79,8 +79,8 @@ func TestGValue_CopyImage(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 != nil {
 		t.Error("Expected val1 to be freed")
@@ -96,8 +96,8 @@ func TestGValue_CopyImage(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 != nil {
 		t.Error("Expected val2 to be freed")

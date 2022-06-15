@@ -8,24 +8,8 @@ package imgvips
 import "C"
 
 import (
-	"sync"
 	"unsafe"
 )
-
-var gVipsImagePool = sync.Pool{
-	New: func() interface{} {
-		var gValue C.GValue
-
-		v := &GValue{
-			gType:  C.vips_image_get_type(),
-			gValue: &gValue,
-		}
-
-		C.g_value_init(v.gValue, v.gType)
-
-		return v
-	},
-}
 
 // Image return *Image, if type is *C.VipsImage.
 // If type not match, ok will return false.
@@ -54,6 +38,9 @@ func (v *GValue) Image() (value *Image, ok bool) {
 func GVipsImage() *GValue {
 	value := C.vips_image_new()
 	v := GNullVipsImage()
+	v.copy = func(val *GValue) (*GValue, error) {
+		return nil, ErrCopyForbidden
+	}
 
 	C.g_value_set_object(v.gValue, C.gpointer(value))
 
@@ -64,15 +51,16 @@ func GVipsImage() *GValue {
 //
 // Calling Copy() at empty *C.VipsImage will return error.
 func GNullVipsImage() *GValue {
-	v := gVipsImagePool.Get().(*GValue)
-	v.freed = false
+	var gValue C.GValue
 
-	if v.free == nil {
-		v.free = gNullVipsImageFree
+	v := &GValue{
+		gType:  C.vips_image_get_type(),
+		gValue: &gValue,
+		free:   gNullVipsImageFree,
+		copy:   gNullVipsImageCopy,
 	}
-	if v.copy == nil {
-		v.copy = gNullVipsImageCopy
-	}
+
+	C.g_value_init(v.gValue, v.gType)
 
 	return v
 }
@@ -85,19 +73,12 @@ func gNullVipsImageFree(val *GValue) {
 	if ptr != nil {
 		C.g_object_unref(ptr)
 	}
-	C.g_value_reset(val.gValue)
-	gVipsImagePool.Put(val)
+	C.g_value_unset(val.gValue)
+	val.gType = C.G_TYPE_NONE
 }
 
 func gNullVipsImageCopy(val *GValue) (*GValue, error) {
-	newVal := gVipsImagePool.Get().(*GValue)
-	newVal.freed = false
-	if newVal.free == nil {
-		newVal.free = val.free
-	}
-	if newVal.copy == nil {
-		newVal.copy = val.copy
-	}
+	newVal := GNullVipsImage()
 
 	ptr := C.g_value_peek_pointer(val.gValue)
 	if ptr == nil {

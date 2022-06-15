@@ -31,8 +31,8 @@ func TestGString(t *testing.T) {
 	v.Free()
 
 	result, ok = v.String()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != "" {
 		t.Fatalf("Expected return %s, got %s", "", result)
@@ -53,8 +53,8 @@ func TestGValue_CopyString(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.String()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 != "" {
 		t.Errorf("Expected val1 contain empty string gValue, got %s", result1)
@@ -70,8 +70,8 @@ func TestGValue_CopyString(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.String()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 != "" {
 		t.Errorf("Expected val2 contain empty string gValue, got %s", result2)
