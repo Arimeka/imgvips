@@ -1,0 +1,37 @@
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y gobject-introspection gtk-doc-tools libcfitsio-dev libfftw3-dev libgif-dev \
+                                libgs-dev libmatio-dev libopenslide-dev liborc-0.4-dev libpango1.0-dev \
+                                libpoppler-glib-dev libwebp-dev libvips-dev && \
+        sudo pkg-config --modversion vips
+
+    - name: Test
+      run: go test -cover -race -coverprofile=cover.out -outputdir=coverage ./...
+
+    - name: Coverage
+      run: go tool cover -func=./coverage/cover.out
+
+    - name: Coveralls
+      uses: shogo82148/actions-goveralls@v1.6.0
+      with:
+        path-to-profile: ./coverage/cover.out
