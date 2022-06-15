@@ -1,8 +1,8 @@
 # IMGVips
-[![Build Status](https://travis-ci.com/Arimeka/imgvips.svg?branch=master)](https://travis-ci.com/Arimeka/imgvips)
+[![Build Status](https://github.com/Arimeka/imgvips/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/Arimeka/imgvips/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Arimeka/imgvips/badge.svg?branch=master)](https://coveralls.io/github/Arimeka/imgvips?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Arimeka/imgvips)](https://goreportcard.com/report/github.com/Arimeka/imgvips)
-[![GoDoc](https://godoc.org/github.com/Arimeka/imgvips?status.svg)](https://godoc.org/github.com/Arimeka/imgvips)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Arimeka/imgvips.svg)](https://pkg.go.dev/github.com/Arimeka/imgvips)
 
 Low-level bindings for [libvips](https://github.com/libvips/libvips). For better shooting to the leg.
 
