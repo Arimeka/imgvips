@@ -15,25 +15,13 @@ func freeVipsBlobAreaFn(val *GValue) {
 	if val.gValue == nil {
 		return
 	}
-	ptr := C.g_value_peek_pointer(val.gValue)
-	if ptr != nil {
-		// VipsBlob can be freed like *C.VipsArea
-		C.vips_area_unref((*C.VipsArea)(ptr))
-	}
-	C.g_value_unset(val.gValue)
-	val.gType = C.G_TYPE_NONE
-}
 
-func freeVipsBlobNullFn(val *GValue) {
-	if val.gValue == nil {
-		return
-	}
 	C.g_value_unset(val.gValue)
 	val.gType = C.G_TYPE_NONE
 }
 
 // Bytes return bytes slice from GValue.
-// It unset gValue after call, so for next call you get nil value
+//
 // If type not match, ok will return false.
 // If VipsBlob already freed, return nil value, ok will be true.
 func (v *GValue) Bytes() (value []byte, ok bool) {
@@ -78,7 +66,7 @@ func GVipsBlob(data []byte) *GValue {
 	size := C.ulong(len(data))
 	blob := C.vips_blob_new(nil, unsafe.Pointer(&data[0]), size)
 
-	C.g_value_set_boxed(v.gValue, C.gconstpointer(blob))
+	C.g_value_take_boxed(v.gValue, C.gconstpointer(blob))
 
 	return v
 }
@@ -94,7 +82,7 @@ func GNullVipsBlob() *GValue {
 		copy: func(val *GValue) (*GValue, error) {
 			return nil, ErrCopyForbidden
 		},
-		free: freeVipsBlobNullFn,
+		free: freeVipsBlobAreaFn,
 	}
 
 	C.g_value_init(v.gValue, v.gType)
