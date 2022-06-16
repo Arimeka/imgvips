@@ -12,6 +12,7 @@ import (
 )
 
 // Image return *Image, if type is *C.VipsImage.
+//
 // If type not match, ok will return false.
 // If gValue already freed, gValue will be nil, ok will be true.
 func (v *GValue) Image() (value *Image, ok bool) {
@@ -38,9 +39,6 @@ func (v *GValue) Image() (value *Image, ok bool) {
 func GVipsImage() *GValue {
 	value := C.vips_image_new()
 	v := GNullVipsImage()
-	v.copy = func(val *GValue) (*GValue, error) {
-		return nil, ErrCopyForbidden
-	}
 
 	C.g_value_set_object(v.gValue, C.gpointer(value))
 
@@ -56,8 +54,8 @@ func GNullVipsImage() *GValue {
 	v := &GValue{
 		gType:  C.vips_image_get_type(),
 		gValue: &gValue,
-		free:   gNullVipsImageFree,
-		copy:   gNullVipsImageCopy,
+		free:   gVipsImageFree,
+		copy:   gVipsImageCopy,
 	}
 
 	C.g_value_init(v.gValue, v.gType)
@@ -65,8 +63,8 @@ func GNullVipsImage() *GValue {
 	return v
 }
 
-func gNullVipsImageFree(val *GValue) {
-	if val.freed {
+func gVipsImageFree(val *GValue) {
+	if val.gValue == nil {
 		return
 	}
 	ptr := C.g_value_peek_pointer(val.gValue)
@@ -77,7 +75,7 @@ func gNullVipsImageFree(val *GValue) {
 	val.gType = C.G_TYPE_NONE
 }
 
-func gNullVipsImageCopy(val *GValue) (*GValue, error) {
+func gVipsImageCopy(val *GValue) (*GValue, error) {
 	newVal := GNullVipsImage()
 
 	ptr := C.g_value_peek_pointer(val.gValue)
@@ -95,11 +93,9 @@ func gNullVipsImageCopy(val *GValue) (*GValue, error) {
 	cOut := cStringsCache.get("out")
 
 	C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cIn, val.gValue)
-	C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
 
 	newOp := C.vips_cache_operation_build(op.operation)
 	if newOp == nil {
-		C.g_object_get_property((*C.GObject)(unsafe.Pointer(op.operation)), cOut, newVal.gValue)
 		newVal.free(newVal)
 
 		return nil, vipsError()

@@ -18,7 +18,7 @@ func newGString() *GValue {
 		gType:  C.G_TYPE_STRING,
 		gValue: &gValue,
 		free: func(val *GValue) {
-			if val.freed {
+			if val.gValue == nil {
 				return
 			}
 			C.g_value_unset(val.gValue)
@@ -29,9 +29,9 @@ func newGString() *GValue {
 
 			str := C.GoString((*C.char)(unsafe.Pointer(C.g_value_get_string(val.gValue))))
 			cStr := C.CString(str)
-			defer C.free(unsafe.Pointer(cStr))
 
 			C.g_value_set_string(newVal.gValue, cStr)
+			C.free(unsafe.Pointer(cStr))
 
 			return newVal, nil
 		},

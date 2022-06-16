@@ -14,7 +14,7 @@ func newGDouble() *GValue {
 		gType:  C.G_TYPE_DOUBLE,
 		gValue: &gValue,
 		free: func(val *GValue) {
-			if val.freed {
+			if val.gValue == nil {
 				return
 			}
 			C.g_value_unset(val.gValue)

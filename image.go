@@ -17,7 +17,6 @@ type Image struct {
 }
 
 // Ptr return unsafe pointer to *C.VipsImage
-// Return nil if image was freed
 func (i *Image) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(i.image)
 }

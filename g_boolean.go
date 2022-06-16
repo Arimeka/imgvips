@@ -14,7 +14,7 @@ func newGBoolean() *GValue {
 		gType:  C.G_TYPE_BOOLEAN,
 		gValue: &gValue,
 		free: func(val *GValue) {
-			if val.freed {
+			if val.gValue == nil {
 				return
 			}
 			C.g_value_unset(val.gValue)

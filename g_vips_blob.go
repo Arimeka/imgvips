@@ -12,7 +12,7 @@ import (
 )
 
 func freeVipsBlobAreaFn(val *GValue) {
-	if val.freed {
+	if val.gValue == nil {
 		return
 	}
 	ptr := C.g_value_peek_pointer(val.gValue)
@@ -25,7 +25,7 @@ func freeVipsBlobAreaFn(val *GValue) {
 }
 
 func freeVipsBlobNullFn(val *GValue) {
-	if val.freed {
+	if val.gValue == nil {
 		return
 	}
 	C.g_value_unset(val.gValue)
