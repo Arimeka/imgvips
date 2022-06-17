@@ -28,21 +28,9 @@ func (v *GValue) Image() (value *Image, ok bool) {
 	}
 
 	return &Image{
-		image: (*C.VipsImage)(C.g_value_get_object(v.gValue)),
+		image: (*C.VipsImage)(ptr),
 		val:   v,
 	}, true
-}
-
-// GVipsImage return gValue, contains new empty *C.VipsImage.
-//
-// Calling Copy() at empty *C.VipsImage will return error.
-func GVipsImage() *GValue {
-	value := C.vips_image_new()
-	v := GNullVipsImage()
-
-	C.g_value_set_object(v.gValue, C.gpointer(value))
-
-	return v
 }
 
 // GNullVipsImage create empty glib object gValue with type for *C.VipsImage.

@@ -10,6 +10,9 @@ import (
 )
 
 func TestGString(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	str := "test string"
 	v := imgvips.GString(str)
 
@@ -40,6 +43,9 @@ func TestGString(t *testing.T) {
 }
 
 func TestGValue_CopyString(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	v := strconv.Itoa(rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000)) // nolint:gosec // For testing
 
 	val1 := imgvips.GString(v)
@@ -96,6 +102,9 @@ func compareStringValsFull(t *testing.T, v string, val1, val2 *imgvips.GValue) {
 }
 
 func BenchmarkGString(b *testing.B) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

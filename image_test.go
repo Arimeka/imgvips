@@ -7,7 +7,11 @@ import (
 )
 
 func TestImage_Sizes(t *testing.T) {
-	val := imgvips.GVipsImage()
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
+	val, op := generateImage(t)
+	defer op.Free()
 
 	img, ok := val.Image()
 	if !ok {
@@ -17,11 +21,11 @@ func TestImage_Sizes(t *testing.T) {
 		t.Fatal("Expected return image, got nil")
 	}
 
-	if img.Width() != 1 {
-		t.Errorf("Expected width to by %d, got %d", 1, img.Width())
+	if img.Width() != 100 {
+		t.Errorf("Expected width to by %d, got %d", 100, img.Width())
 	}
-	if img.Height() != 1 {
-		t.Errorf("Expected height to by %d, got %d", 1, img.Height())
+	if img.Height() != 100 {
+		t.Errorf("Expected height to by %d, got %d", 100, img.Height())
 	}
 
 	val.Free()

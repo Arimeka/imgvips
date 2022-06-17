@@ -9,6 +9,9 @@ import (
 )
 
 func TestGInt(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	value := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10000) // nolint:gosec // For testing
 
 	v := imgvips.GInt(value)
@@ -41,6 +44,9 @@ func TestGInt(t *testing.T) {
 }
 
 func TestGValue_CopyInt(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	v := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000) // nolint:gosec // For testing
 
 	val1 := imgvips.GInt(v)
@@ -97,6 +103,9 @@ func compareIntValsFull(t *testing.T, v int, val1, val2 *imgvips.GValue) {
 }
 
 func BenchmarkGInt(b *testing.B) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

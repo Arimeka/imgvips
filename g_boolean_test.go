@@ -7,6 +7,9 @@ import (
 )
 
 func TestGBoolean(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	v := imgvips.GBoolean(true)
 	defer v.Free()
 
@@ -52,6 +55,9 @@ func TestGBoolean(t *testing.T) {
 }
 
 func TestGValue_CopyBoolean(t *testing.T) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	val1 := imgvips.GBoolean(true)
 
 	val2, err := val1.Copy()
@@ -106,6 +112,9 @@ func compareBooleanValsFull(t *testing.T, val1, val2 *imgvips.GValue) {
 }
 
 func BenchmarkGBoolean(b *testing.B) {
+	imgvips.VipsCacheSetMaxMem(0)
+	imgvips.VipsCacheSetMax(0)
+
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
