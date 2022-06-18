@@ -9,9 +9,6 @@ import (
 )
 
 func TestGDouble(t *testing.T) {
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
-
 	value := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	v := imgvips.GDouble(value)
@@ -43,9 +40,6 @@ func TestGDouble(t *testing.T) {
 }
 
 func TestGValue_CopyDouble(t *testing.T) {
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
-
 	v := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	val1 := imgvips.GDouble(v)
@@ -102,9 +96,6 @@ func compareDoubleValsFull(t *testing.T, v float64, val1, val2 *imgvips.GValue) 
 }
 
 func BenchmarkGDouble(b *testing.B) {
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
-
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

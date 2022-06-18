@@ -7,8 +7,7 @@ import (
 )
 
 func TestGVipsImage(t *testing.T) {
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(t)
 
 	v, op := generateImage(t)
 	defer op.Free()
@@ -40,8 +39,7 @@ func TestGVipsImage(t *testing.T) {
 }
 
 func TestGNullVipsImage(t *testing.T) {
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(t)
 
 	v := imgvips.GNullVipsImage()
 
@@ -72,9 +70,7 @@ func TestGNullVipsImage(t *testing.T) {
 }
 
 func TestGValue_CopyImage(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(t)
 
 	val1, op := generateImage(t)
 	defer op.Free()
@@ -152,9 +148,7 @@ func compareImageValsFull(t *testing.T, val1, val2 *imgvips.GValue) {
 }
 
 func TestGValue_CopyNullImage(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(t)
 
 	val1 := imgvips.GNullVipsImage()
 	val2, err := val1.Copy()
@@ -182,9 +176,7 @@ func TestGValue_CopyNullImage(t *testing.T) {
 }
 
 func BenchmarkGNullVipsImage(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(b)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -195,9 +187,7 @@ func BenchmarkGNullVipsImage(b *testing.B) {
 }
 
 func BenchmarkGValue_CopyVipsImage(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
-	imgvips.VipsCacheSetMaxMem(0)
-	imgvips.VipsCacheSetMax(0)
+	initVips(b)
 
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {
