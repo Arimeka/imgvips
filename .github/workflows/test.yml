@@ -26,7 +26,7 @@ jobs:
         sudo pkg-config --modversion vips
 
     - name: Test
-      run: go test -cover -race -coverprofile=cover.out -outputdir=coverage ./...
+      run: go test -short -cover -race -coverprofile=cover.out -outputdir=coverage ./...
 
     - name: Coverage
       run: go tool cover -func=./coverage/cover.out
