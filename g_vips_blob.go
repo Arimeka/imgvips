@@ -8,51 +8,20 @@ package imgvips
 import "C"
 
 import (
-	"sync"
 	"unsafe"
 )
 
-var gVipsBlobPool = sync.Pool{
-	New: func() interface{} {
-		var gValue C.GValue
-
-		v := &GValue{
-			gType:  C.vips_blob_get_type(),
-			gValue: &gValue,
-			copy: func(val *GValue) (*GValue, error) {
-				return nil, ErrCopyForbidden
-			},
-		}
-
-		C.g_value_init(v.gValue, v.gType)
-
-		return v
-	},
-}
-
 func freeVipsBlobAreaFn(val *GValue) {
-	ptr := C.g_value_peek_pointer(val.gValue)
-	if ptr != nil {
-		// VipsBlob can be freed like *C.VipsArea
-		C.vips_area_unref((*C.VipsArea)(ptr))
-	}
-	C.g_value_reset(val.gValue)
-	val.free = freeVipsBlobNullFn
-
-	gVipsBlobPool.Put(val)
-}
-
-func freeVipsBlobNullFn(val *GValue) {
-	if val.freed {
+	if val.gValue == nil {
 		return
 	}
-	C.g_value_reset(val.gValue)
 
-	gVipsBlobPool.Put(val)
+	C.g_value_unset(val.gValue)
+	val.gType = C.G_TYPE_NONE
 }
 
 // Bytes return bytes slice from GValue.
-// It unset gValue after call, so for next call you get nil value
+//
 // If type not match, ok will return false.
 // If VipsBlob already freed, return nil value, ok will be true.
 func (v *GValue) Bytes() (value []byte, ok bool) {
@@ -97,7 +66,7 @@ func GVipsBlob(data []byte) *GValue {
 	size := C.ulong(len(data))
 	blob := C.vips_blob_new(nil, unsafe.Pointer(&data[0]), size)
 
-	C.g_value_set_boxed(v.gValue, C.gconstpointer(blob))
+	C.g_value_take_boxed(v.gValue, C.gconstpointer(blob))
 
 	return v
 }
@@ -105,12 +74,18 @@ func GVipsBlob(data []byte) *GValue {
 // GNullVipsBlob create empty glib object gValue with type for *C.VipsBlob
 // Calling Copy() at GValue with type VipsBlob is forbidden.
 func GNullVipsBlob() *GValue {
-	v := gVipsBlobPool.Get().(*GValue)
-	v.freed = false
+	var gValue C.GValue
 
-	if v.free == nil {
-		v.free = freeVipsBlobNullFn
+	v := &GValue{
+		gType:  C.vips_blob_get_type(),
+		gValue: &gValue,
+		copy: func(val *GValue) (*GValue, error) {
+			return nil, ErrCopyForbidden
+		},
+		free: freeVipsBlobAreaFn,
 	}
+
+	C.g_value_init(v.gValue, v.gType)
 
 	return v
 }

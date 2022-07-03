@@ -9,7 +9,7 @@ import (
 )
 
 func TestGDouble(t *testing.T) {
-	value := rand.New(rand.NewSource(time.Now().UnixNano())).Float64()
+	value := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	v := imgvips.GDouble(value)
 
@@ -31,8 +31,8 @@ func TestGDouble(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Double()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != 0 {
 		t.Fatalf("Expected return %f, got %f", float64(0), result)
@@ -40,7 +40,7 @@ func TestGDouble(t *testing.T) {
 }
 
 func TestGValue_CopyDouble(t *testing.T) {
-	v := rand.New(rand.NewSource(time.Now().UnixNano())).Float64()
+	v := rand.New(rand.NewSource(time.Now().UnixNano())).Float64() // nolint:gosec // For testing
 
 	val1 := imgvips.GDouble(v)
 
@@ -53,8 +53,8 @@ func TestGValue_CopyDouble(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.Double()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 != 0 {
 		t.Errorf("Expected val1 contain %f gValue, got %f", 0.0, result1)
@@ -70,8 +70,8 @@ func TestGValue_CopyDouble(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.Double()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 != 0 {
 		t.Errorf("Expected val2 contain %f gValue, got %f", 0.0, result2)

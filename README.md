@@ -14,6 +14,17 @@ of the existing image operations in the library.
 * [livips](https://github.com/libvips/libvips) 8+ (a higher version is usually better)
 * Go 1.11+ (should work on lower versions, but I did not check)
 
+# Memory leak
+
+To reduce memory leak and avoid possible SIGSEGV is recommended to disable libvips cache and vector calculations,
+i.e. use:
+
+```
+imgvips.VipsCacheSetMaxMem(0)
+imgvips.VipsCacheSetMax(0)
+imgvips.VipsVectorSetEnables(false)
+```
+
 # Usage
 
 See examples folder.

@@ -19,6 +19,7 @@ var (
 )
 
 // NewOperation initialize new *C.VipsOperation.
+//
 // If libvips don't known operation with provided name, function return error.
 func NewOperation(name string) (*Operation, error) {
 	op := C.vips_operation_new(cStringsCache.get(name))
@@ -31,8 +32,9 @@ func NewOperation(name string) (*Operation, error) {
 	}, nil
 }
 
-// Operation wrapper around *C.VipsOperation
-// Contains separates arguments for set to operation and arguments to return from operation.
+// Operation wrapper around *C.VipsOperation.
+//
+// It contains separates arguments for set to operation and arguments to return from operation.
 type Operation struct {
 	operation *C.VipsOperation
 
@@ -42,6 +44,7 @@ type Operation struct {
 }
 
 // AddInput adds argument for set to operation.
+//
 // After call *Operation.Exec(), all values from input arguments will be freed.
 func (op *Operation) AddInput(name string, value Value) {
 	op.mu.Lock()
@@ -51,8 +54,9 @@ func (op *Operation) AddInput(name string, value Value) {
 }
 
 // AddOutput adds argument for get from operation.
+//
 // After call Exec(), all values from output arguments will be updated from operation result.
-// This arguments will be freed after call *Operation.Free()
+// These arguments will be freed after call *Operation.Free()
 func (op *Operation) AddOutput(name string, value Value) {
 	op.mu.Lock()
 	defer op.mu.Unlock()
@@ -61,8 +65,9 @@ func (op *Operation) AddOutput(name string, value Value) {
 }
 
 // Exec executes operation.
-// After execute all input arguments will be freed, all output arguments will be update.
-// If operation return error, input arguments will be freed, all output arguments will not be update and not be freed.
+//
+// After execute all input arguments will be freed, all output arguments will be updated.
+// If operation return error, input arguments will be freed, all output arguments will not be updated and not be freed.
 func (op *Operation) Exec() error {
 	op.mu.Lock()
 	defer op.mu.Unlock()
@@ -78,9 +83,6 @@ func (op *Operation) Exec() error {
 	}
 
 	for _, arg := range op.inputs {
-		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
-	}
-	for _, arg := range op.outputs {
 		C.g_object_set_property((*C.GObject)(unsafe.Pointer(op.operation)), arg.name(), (*C.GValue)(arg.value().Ptr()))
 	}
 

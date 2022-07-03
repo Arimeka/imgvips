@@ -9,7 +9,7 @@ import (
 )
 
 func TestGInt(t *testing.T) {
-	value := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10000)
+	value := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10000) // nolint:gosec // For testing
 
 	v := imgvips.GInt(value)
 	defer v.Free()
@@ -32,8 +32,8 @@ func TestGInt(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Int()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != 0 {
 		t.Fatalf("Expected return %d, got %d", 0, result)
@@ -41,7 +41,7 @@ func TestGInt(t *testing.T) {
 }
 
 func TestGValue_CopyInt(t *testing.T) {
-	v := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000)
+	v := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(20000) // nolint:gosec // For testing
 
 	val1 := imgvips.GInt(v)
 
@@ -54,8 +54,8 @@ func TestGValue_CopyInt(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.Int()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 != 0 {
 		t.Errorf("Expected val1 contain %d gValue, got %d", 0, result1)
@@ -71,8 +71,8 @@ func TestGValue_CopyInt(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.Int()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 != 0 {
 		t.Errorf("Expected val2 contain %d gValue, got %d", 0, result2)

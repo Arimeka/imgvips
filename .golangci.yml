@@ -1,22 +1,23 @@
 run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   deadline: 3m
-
-service:
-  prepare:
-    - apt-get update && apt-get install -y gcc pkg-config libvips-dev
+  go: '1.18'
 
 linters:
   enable:
     - deadcode
     - errcheck
+    - funlen
     - gas
+    - gochecknoinits
     - gocritic
+    - gocyclo
     - gofmt
-    - goimports
-    - golint
+    - revive
+    - gosec
     - gosimple
     - ineffassign
+    - govet
     - megacheck
     - misspell
     - nakedret
@@ -25,6 +26,6 @@ linters:
     - typecheck
     - unconvert
     - unparam
-    - varcheck
     - unused
+    - varcheck
   fast: false

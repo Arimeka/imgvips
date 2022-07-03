@@ -31,10 +31,9 @@ type GValue struct {
 	gType  C.GType
 	gValue *C.GValue
 
-	freed bool
-	free  func(val *GValue)
-	copy  func(val *GValue) (*GValue, error)
-	mu    sync.RWMutex
+	free func(val *GValue)
+	copy func(val *GValue) (*GValue, error)
+	mu   sync.RWMutex
 }
 
 // Ptr return unsafe pointer to *C.GValue
@@ -59,12 +58,12 @@ func (v *GValue) Free() {
 	defer v.mu.Unlock()
 
 	v.free(v)
-	v.freed = true
+	v.gValue = nil
 }
 
 func (v *GValue) wasFreed() bool {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 
-	return v.freed
+	return v.gValue == nil
 }

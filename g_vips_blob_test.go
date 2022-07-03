@@ -9,7 +9,7 @@ import (
 )
 
 func TestGBytes(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(t)
 
 	v := imgvips.GVipsBlob(nil)
 	result, ok := v.Bytes()
@@ -40,8 +40,8 @@ func TestGBytes(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Bytes()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if len(result) != 0 {
 		t.Fatalf("Expected return data with %d size, got %d size", 0, len(result))
@@ -49,6 +49,8 @@ func TestGBytes(t *testing.T) {
 }
 
 func TestGNullVipsBlob(t *testing.T) {
+	initVips(t)
+
 	v := imgvips.GNullVipsBlob()
 	result, ok := v.Bytes()
 	if !ok {
@@ -64,7 +66,7 @@ func TestGNullVipsBlob(t *testing.T) {
 }
 
 func TestGValue_CopyBytes(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(t)
 
 	v := imgvips.GNullVipsBlob()
 
@@ -75,7 +77,7 @@ func TestGValue_CopyBytes(t *testing.T) {
 }
 
 func BenchmarkGVipsBlob(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(b)
 
 	data, err := ioutil.ReadFile("./tests/fixtures/img.webp")
 	if err != nil {
@@ -98,7 +100,7 @@ func BenchmarkGVipsBlob(b *testing.B) {
 }
 
 func BenchmarkGNullVipsBlob(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(b)
 
 	b.ReportAllocs()
 	b.ResetTimer()

@@ -7,7 +7,10 @@ import (
 )
 
 func TestGVipsImage(t *testing.T) {
-	v := imgvips.GVipsImage()
+	initVips(t)
+
+	v, op := generateImage(t)
+	defer op.Free()
 
 	_, ok := v.Double()
 	if ok {
@@ -27,8 +30,8 @@ func TestGVipsImage(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != nil {
 		t.Fatalf("Expected return %v, got %v", nil, result)
@@ -36,6 +39,8 @@ func TestGVipsImage(t *testing.T) {
 }
 
 func TestGNullVipsImage(t *testing.T) {
+	initVips(t)
+
 	v := imgvips.GNullVipsImage()
 
 	_, ok := v.Int()
@@ -56,8 +61,8 @@ func TestGNullVipsImage(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result != nil {
 		t.Fatalf("Expected return %v, got %v", nil, result)
@@ -65,7 +70,7 @@ func TestGNullVipsImage(t *testing.T) {
 }
 
 func TestGValue_CopyImage(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(t)
 
 	val1, op := generateImage(t)
 	defer op.Free()
@@ -79,8 +84,8 @@ func TestGValue_CopyImage(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 != nil {
 		t.Error("Expected val1 to be freed")
@@ -96,8 +101,8 @@ func TestGValue_CopyImage(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.Image()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 != nil {
 		t.Error("Expected val2 to be freed")
@@ -143,7 +148,7 @@ func compareImageValsFull(t *testing.T, val1, val2 *imgvips.GValue) {
 }
 
 func TestGValue_CopyNullImage(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(t)
 
 	val1 := imgvips.GNullVipsImage()
 	val2, err := val1.Copy()
@@ -170,19 +175,8 @@ func TestGValue_CopyNullImage(t *testing.T) {
 	}
 }
 
-func TestGValue_CopyNewImage(t *testing.T) {
-	imgvips.VipsDetectMemoryLeak(true)
-
-	val1 := imgvips.GVipsImage()
-	defer val1.Free()
-	_, err := val1.Copy()
-	if err == nil {
-		t.Fatal("Expected to return error, got nil")
-	}
-}
-
 func BenchmarkGNullVipsImage(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(b)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -192,19 +186,8 @@ func BenchmarkGNullVipsImage(b *testing.B) {
 	}
 }
 
-func BenchmarkGVipsImage(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		val := imgvips.GVipsImage()
-		val.Free()
-	}
-}
-
 func BenchmarkGValue_CopyVipsImage(b *testing.B) {
-	imgvips.VipsDetectMemoryLeak(true)
+	initVips(b)
 
 	op, err := imgvips.NewOperation("webpload")
 	if err != nil {

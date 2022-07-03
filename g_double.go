@@ -7,21 +7,31 @@ package imgvips
 */
 import "C"
 
-import "sync"
+func newGDouble() *GValue {
+	var gValue C.GValue
 
-var gDoublePool = sync.Pool{
-	New: func() interface{} {
-		var gValue C.GValue
+	v := &GValue{
+		gType:  C.G_TYPE_DOUBLE,
+		gValue: &gValue,
+		free: func(val *GValue) {
+			if val.gValue == nil {
+				return
+			}
+			C.g_value_unset(val.gValue)
+			val.gType = C.G_TYPE_NONE
+		},
+		copy: func(val *GValue) (*GValue, error) {
+			newVal := newGDouble()
 
-		v := &GValue{
-			gType:  C.G_TYPE_DOUBLE,
-			gValue: &gValue,
-		}
+			C.g_value_copy(val.gValue, newVal.gValue)
 
-		C.g_value_init(v.gValue, v.gType)
+			return newVal, nil
+		},
+	}
 
-		return v
-	},
+	C.g_value_init(v.gValue, v.gType)
+
+	return v
 }
 
 // Double return float64 gValue, if type is GDouble.
@@ -40,35 +50,8 @@ func (v *GValue) Double() (value float64, ok bool) {
 
 // GDouble transform float64 gValue to glib gValue
 func GDouble(value float64) *GValue {
-	v := gDoublePool.Get().(*GValue)
-	v.freed = false
+	v := newGDouble()
 	C.g_value_set_double(v.gValue, C.gdouble(value))
-
-	if v.free == nil {
-		v.free = func(val *GValue) {
-			if val.freed {
-				return
-			}
-			C.g_value_reset(val.gValue)
-			gDoublePool.Put(val)
-		}
-	}
-	if v.copy == nil {
-		v.copy = func(val *GValue) (*GValue, error) {
-			newVal := gDoublePool.Get().(*GValue)
-			newVal.freed = false
-			if newVal.free == nil {
-				newVal.free = val.free
-			}
-			if newVal.copy == nil {
-				newVal.copy = val.copy
-			}
-
-			C.g_value_copy(val.gValue, newVal.gValue)
-
-			return newVal, nil
-		}
-	}
 
 	return v
 }

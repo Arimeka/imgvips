@@ -32,8 +32,8 @@ func TestGBoolean(t *testing.T) {
 	v.Free()
 
 	result, ok = v.Boolean()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result {
 		t.Fatal("Expected return false, got true")
@@ -63,8 +63,8 @@ func TestGValue_CopyBoolean(t *testing.T) {
 
 	val1.Free()
 	result1, ok := val1.Boolean()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result1 {
 		t.Error("Expected val1 contain false gValue")
@@ -80,8 +80,8 @@ func TestGValue_CopyBoolean(t *testing.T) {
 
 	val2.Free()
 	result2, ok = val2.Boolean()
-	if !ok {
-		t.Fatal("Expected to be ok")
+	if ok {
+		t.Fatal("Expected to not be ok")
 	}
 	if result2 {
 		t.Error("Expected val2 contain false gValue")
